@@ -1,25 +1,28 @@
 package com.pipeline.model;
 
-import java.util.EnumSet;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
-
 
 public enum PipelinePhase {
 
-    DONE(EnumSet.noneOf(PipelinePhase.class)),
-    FAILED(EnumSet.noneOf(PipelinePhase.class)),
-    PACKAGING(EnumSet.of(DONE)),
-    COMPLIANCE(EnumSet.of(PACKAGING)),
-    VISUALS(EnumSet.of(COMPLIANCE)),
-    AUDIO_TEXT(EnumSet.of(COMPLIANCE)),
-    ANALYSIS(EnumSet.of(VISUALS, AUDIO_TEXT)),
-    INGEST(EnumSet.of(ANALYSIS)),
-    IDLE(EnumSet.of(INGEST));
-    
+    DONE,
+    FAILED,
+    PACKAGING(DONE),
+    COMPLIANCE(PACKAGING),
+    VISUALS(COMPLIANCE),
+    AUDIO_TEXT(COMPLIANCE),
+    ANALYSIS(VISUALS, AUDIO_TEXT),
+    INGEST(ANALYSIS),
+    IDLE(INGEST);
+
     private final Set<PipelinePhase> allowedNext;
 
-    PipelinePhase(Set<PipelinePhase> allowedNext) {
-        this.allowedNext = allowedNext;
+    PipelinePhase(PipelinePhase... next) {
+        // HashSet avoids the EnumSet bootstrapping issue where the class
+        // is not yet registered as an enum during its own static initialisation.
+        this.allowedNext = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(next)));
     }
 
     public boolean canTransitionTo(PipelinePhase next) {
